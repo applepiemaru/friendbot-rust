@@ -901,6 +901,15 @@ async fn main() {
 
     let intents = GatewayIntents::GUILD_MESSAGES | GatewayIntents::DIRECT_MESSAGES | GatewayIntents::MESSAGE_CONTENT;
 
+    // --- Zeabur Health Check Server ---
+    tokio::spawn(async move {
+        use warp::Filter;
+        let health_route = warp::path::end().map(|| "FriendBot is Alive!");
+        let port = std::env::var("PORT").unwrap_or_else(|_| "8080".to_string()).parse::<u16>().unwrap_or(8080);
+        println!("[INFO] Health Check Server listening on port {}", port);
+        warp::serve(health_route).run(([0, 0, 0, 0], port)).await;
+    });
+
     println!("[INFO] Starting EverText Rust Bot...");
     let mut client = Client::builder(&token, intents)
         .event_handler(handler)
