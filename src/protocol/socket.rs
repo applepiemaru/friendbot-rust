@@ -86,6 +86,12 @@ impl EvertextClient {
     }
 
     pub async fn run_loop(&mut self, account: &Account, decrypted_code: &str, mode: RunMode) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        // SAFETY: Immediate fail if code is empty.
+        if decrypted_code.is_empty() {
+             println!("[ERROR] Code is empty/missing for {}", account.name);
+             return Err("MISSING_CODE".into());
+        }
+
         let mut last_ping = Instant::now();
         let mut state = GameState::Connected;
         
@@ -306,8 +312,14 @@ impl EvertextClient {
                          // --- 5. End of Loop ---
                          // "Press y to perform more commands:"
                          if output_text.contains("Press y to perform more commands") {
-                             println!("[INFO] Prompt: 'Perform more commands'. Run Complete.");
-                             return Err("SESSION_COMPLETE".into()); // Trigger clean exit
+                             // SAFETY: Only accept success if we have actually sent the Code or Server Selection.
+                             // This prevents "Welcome" messages or early exits from triggering success.
+                             if *state == GameState::ServerSelected || *state == GameState::SentCode || *state == GameState::SentD {
+                                 println!("[INFO] Success Trigger Hit: {}", output_text.chars().take(100).collect::<String>());
+                                 return Err("SESSION_COMPLETE".into());
+                             } else {
+                                 println!("[WARN] Ignoring prematrure 'Perform more commands' trigger (State: {:?})", state);
+                             }
                          }
 
                          // --- 6. Error Handling ---

@@ -370,6 +370,8 @@ impl EventHandler for Handler {
                 .description("[ADMIN] List accounts in Handout list"),
             CreateCommand::new("run_handout")
                 .description("[ADMIN] Run Handout routine for enabled accounts"),
+            CreateCommand::new("reset_status")
+                .description("[ADMIN] Reset all accounts to 'pending'"),
         ]).await;
 
         println!("[INFO] Discord: Slash commands registered successfully");
@@ -861,6 +863,15 @@ impl EventHandler for Handler {
                     } else {
                          self.process_handout_queue(ctx.clone(), Some(command.channel_id)).await;
                          content = "Starting Handout routine for all enabled accounts... Check logs.".to_string();
+                    }
+                },
+                "reset_status" => {
+                    if !self.is_admin(&ctx, &command).await {
+                         content = "Admin permissions required.".to_string();
+                    } else {
+                        let mut db = self.db.lock().await;
+                        let _ = db.reset_all_statuses();
+                        content = "✅ All account statuses reset to **Pending**.".to_string();
                     }
                 },
                 _ => content = "Unknown command.".to_string(),
