@@ -368,10 +368,10 @@ impl EventHandler for Handler {
                 .add_option(CreateCommandOption::new(CommandOptionType::String, "name", "Account Name").required(true)),
             CreateCommand::new("ho_list")
                 .description("[ADMIN] List accounts in Handout list"),
-            CreateCommand::new("run_handout")
-                .description("[ADMIN] Run Handout routine for enabled accounts"),
             CreateCommand::new("reset_status")
                 .description("[ADMIN] Reset all accounts to 'pending'"),
+            CreateCommand::new("run_handout")
+                .description("[ADMIN] Run Handout routine for enabled accounts"),
         ]).await;
 
         println!("[INFO] Discord: Slash commands registered successfully");
@@ -790,6 +790,21 @@ impl EventHandler for Handler {
                              Ok(false) => { 
                                  // Force enable if it toggled to false (user meant add)
                                  let _ = db.toggle_handout(name); 
+                                 content = format!("**{}** is already in list (Re-enabled).", name);
+                             },
+                             Err(_) => content = format!("Account **{}** not found.", name),
+                         }
+                    }
+                },
+                "reset_status" => {
+                    if !self.is_admin(&ctx, &command).await {
+                         content = "Admin permissions required.".to_string();
+                    } else {
+                        let mut db = self.db.lock().await;
+                        let _ = db.reset_all_statuses();
+                        content = "✅ All account statuses reset to **Pending**.".to_string();
+                    }
+                },
                                  content = format!("**{}** is already in Handout list.", name);
                              },
                              Err(_) => content = format!("Account **{}** not found.", name),
@@ -863,15 +878,6 @@ impl EventHandler for Handler {
                     } else {
                          self.process_handout_queue(ctx.clone(), Some(command.channel_id)).await;
                          content = "Starting Handout routine for all enabled accounts... Check logs.".to_string();
-                    }
-                },
-                "reset_status" => {
-                    if !self.is_admin(&ctx, &command).await {
-                         content = "Admin permissions required.".to_string();
-                    } else {
-                        let mut db = self.db.lock().await;
-                        let _ = db.reset_all_statuses();
-                        content = "✅ All account statuses reset to **Pending**.".to_string();
                     }
                 },
                 _ => content = "Unknown command.".to_string(),
