@@ -343,6 +343,9 @@ impl EvertextClient {
             } else if event_name == "disconnect" {
                 println!("[ERROR] Server sent 'disconnect' event.");
                 return Err("SERVER_DISCONNECT".into());
+            } else if event_name == "activity_ping" {
+                // Ignore heartbeat/ping events
+                return Ok(());
             } else {
                 println!("[DEBUG] Unhandled Socket.io event: {} -> {:?}", event_name, event_data);
             }
