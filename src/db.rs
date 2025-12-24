@@ -124,8 +124,15 @@ impl Database {
                     },
                     None => {
                         println!("[WARN] No database file found on disk. Using EMBEDDED database fallback.");
-                        // Fallback to embedded content so the bot doesn't crash
-                        include_str!("../db.json").to_string()
+                        let embedded = include_str!("../db.json").to_string();
+                        // AUTO-RESTORE: Write the embedded content to disk so we can save later
+                        let restore_path = "db.json";
+                        if let Err(e) = fs::write(restore_path, &embedded) {
+                            println!("[WARN] Failed to restore db.json to disk: {}", e);
+                        } else {
+                            println!("[INFO] successfully restored db.json from embedded backup to '{}'", restore_path);
+                        }
+                        embedded
                     }
                 }
             }
