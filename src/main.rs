@@ -870,8 +870,14 @@ impl EventHandler for Handler {
                     if !self.is_admin(&ctx, &command).await {
                          content = "Admin permissions required.".to_string();
                     } else {
-                         self.process_handout_queue(ctx.clone(), Some(command.channel_id)).await;
-                         content = "Starting Handout routine for all enabled accounts... Check logs.".to_string();
+                         // Time restriction check (18:00 - 19:00 Jakarta)
+                         let now = Utc::now().with_timezone(&Jakarta);
+                         if now.hour() == 18 {
+                             self.process_handout_queue(ctx.clone(), Some(command.channel_id)).await;
+                             content = "Starting Handout routine for all enabled accounts... Check logs.".to_string();
+                         } else {
+                             content = format!("❌ **Handout command is restricted to 18:00 - 19:00 Jakarta time.** (Current time: {:02}:{:02})", now.hour(), now.minute());
+                         }
                     }
                 },
                 _ => content = "Unknown command.".to_string(),

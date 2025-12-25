@@ -238,19 +238,11 @@ impl EvertextClient {
                                  self.send_command(&selected_index).await?;
                                  *state = GameState::ServerSelected;
                              } else {
-                                 println!("[INFO] No targetServer specified. Assuming single server - waiting for terminal to auto-select.");
-                                 // Do NOT send any command. Terminal handles it.
+                                 println!("[INFO] No targetServer specified. Assuming single server.");
                              }
                          }
 
-                         // --- 4. More Events Prompt ---
-                         // "Press y to do more events:"
-                         if output_text.contains("Press y to do more events") {
-                             println!("[ACTION] Prompt: 'Do more events?'. Sending 'y' (waiting for 'next' prompt to exit)...");
-                             self.send_command("y").await?;
-                         }
-
-                         // --- 5. End of Loop ---
+                         // --- 2. Main Game Flow ---
                          
                          // "Press y to spend mana on event stages :"
                          if output_text.contains("Press y to spend mana on event stages") {
@@ -285,8 +277,6 @@ impl EvertextClient {
                          }
 
                          // --- 3. Mana Refill Logic (Situational) ---
-                         // "DO U WANT TO REFILL MANA ? (press y to refill):"
-                         // "DO U WANT TO REFILL MANA ? (press y to refill):"
                          if output_text.contains("DO U WANT TO REFILL MANA") {
                              println!("[ACTION] Prompt: 'Refill Mana'. Sending 'y'...");
                              self.send_command("y").await?;
@@ -305,45 +295,43 @@ impl EvertextClient {
                          }
 
                          // --- 4. More Events Prompt ---
-                         // "Press y to do more events:"
-                         // User logic: "we will write 'y' and now the terminal will ask for 'next: ...' now we will write 'exit'"
                          if output_text.contains("Press y to do more events") {
-                             println!("[ACTION] Prompt: 'Do more events?'. Sending 'y' (waiting for 'next' prompt to exit)...");
+                             println!("[ACTION] Prompt: 'Do more events?'. Sending 'y'...");
                              self.send_command("y").await?;
-                             // We do NOT send 'exit' here. We wait for the "next: Go to the next event" prompt to appear again.
-                             // Since 'auto_sent' is already true, the 'next' block above will handle sending 'exit'.
                          }
 
                          // "Press y to perform more commands:"
                          if output_text.contains("Press y to perform more commands") {
-                             // Only exit if we've actually done work OR it's clearly finished/already done
-                             if *auto_sent || *handout_sent || output_text.contains("already") || output_text.contains("Finish") || output_text.contains("Success") {
-                                 println!("[INFO] Prompt: 'Perform more commands'. Run Complete.");
+                             // CRITICAL: Check history for previous Success/Finish indicators even if not in this pack
+                             let h_lower = self.history.to_lowercase();
+                             let is_finished = h_lower.contains("success") || 
+                                               h_lower.contains("finish") || 
+                                               h_lower.contains("done") || 
+                                               h_lower.contains("already performed") ||
+                                               h_lower.contains("already done");
+
+                             if *auto_sent || *handout_sent || is_finished {
+                                 println!("[INFO] Success Trigger Hit (auto_sent: {}, finish_seen: {}). Run Complete.", *auto_sent, is_finished);
                                  return Err("SESSION_COMPLETE".into()); // Trigger clean exit
                              } else {
-                                 println!("[WARN] Seen exit prompt but no work confirmed (*auto_sent: {}, *handout_sent: {}). Sending 'y' to return to menu...", *auto_sent, *handout_sent);
+                                 println!("[WARN] Seen exit prompt but no work confirmed. Sending 'y' to return to menu...");
                                  self.send_command("y").await?;
                              }
                          }
 
                          // --- 6. Error Handling ---
-                         
-                         // "Invalid Command ... Exiting Now"
                          if output_text.contains("Invalid Command") && output_text.contains("Exiting Now") {
                              println!("[ERROR] Invalid Command Detected. Triggering Restart...");
-                             return Err("INVALID_COMMAND_RESTART".into());
+                               return Err("INVALID_COMMAND_RESTART".into());
                          }
-
                          if output_text.contains("Either Zigza error or Incorrect Restore Code Entered") {
                              println!("[ERROR] Zigza Error Detected!");
                              return Err("ZIGZA_DETECTED".into());
                          }
-
                          if output_text.contains("Server reached maximum limit of restore accounts") {
                              println!("[ERROR] Server Full Detected!");
                              return Err("SERVER_FULL".into());
                          }
-
                          if output_text.contains("Access to start bot is restricted only for logged in users") {
                              println!("[ERROR] Login Required / Cookie Expired!");
                              return Err("LOGIN_REQUIRED".into());
@@ -360,7 +348,6 @@ impl EvertextClient {
                 println!("[ERROR] Server sent 'disconnect' event.");
                 return Err("SERVER_DISCONNECT".into());
             } else if event_name == "activity_ping" || event_name == "user_count_update" {
-                // Silenced heartbeat/ping/count events to clean up logs
                 return Ok(());
             } else {
                 println!("[DEBUG] Unhandled Socket.io event: {} -> {:?}", event_name, event_data);
