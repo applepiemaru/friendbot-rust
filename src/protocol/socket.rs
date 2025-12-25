@@ -86,12 +86,6 @@ impl EvertextClient {
     }
 
     pub async fn run_loop(&mut self, account: &Account, decrypted_code: &str, mode: RunMode) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-        // SAFETY: Immediate fail if code is empty.
-        if decrypted_code.is_empty() {
-             println!("[ERROR] Code is empty/missing for {}", account.name);
-             return Err("MISSING_CODE".into());
-        }
-
         let mut last_ping = Instant::now();
         let mut state = GameState::Connected;
         
@@ -114,9 +108,9 @@ impl EvertextClient {
                      }
 
                      // 2. Game Activity Timeout (Stuck on 'start' or unresponsive script)
-                     // If we haven't received any 'output' from the game in 120 seconds, assume stuck.
-                     if last_activity.elapsed().as_secs() > 120 {
-                         println!("[ERROR] Game Activity timed out (stuck for 120s). Disconnecting...");
+                     // If we haven't received any 'output' from the game in 180 seconds, assume stuck.
+                     if last_activity.elapsed().as_secs() > 180 {
+                         println!("[ERROR] Game Activity timed out (stuck for 180s). Disconnecting...");
                          return Err("ACTIVITY_TIMEOUT".into());
                      }
                 }
@@ -312,14 +306,8 @@ impl EvertextClient {
                          // --- 5. End of Loop ---
                          // "Press y to perform more commands:"
                          if output_text.contains("Press y to perform more commands") {
-                             // SAFETY: Only accept success if we have actually sent the Code or Server Selection.
-                             // This prevents "Welcome" messages or early exits from triggering success.
-                             if *state == GameState::ServerSelected || *state == GameState::SentCode || *state == GameState::SentD {
-                                 println!("[INFO] Success Trigger Hit: {}", output_text.chars().take(100).collect::<String>());
-                                 return Err("SESSION_COMPLETE".into());
-                             } else {
-                                 println!("[WARN] Ignoring prematrure 'Perform more commands' trigger (State: {:?})", state);
-                             }
+                             println!("[INFO] Prompt: 'Perform more commands'. Run Complete.");
+                             return Err("SESSION_COMPLETE".into()); // Trigger clean exit
                          }
 
                          // --- 6. Error Handling ---
@@ -356,7 +344,7 @@ impl EvertextClient {
                 println!("[ERROR] Server sent 'disconnect' event.");
                 return Err("SERVER_DISCONNECT".into());
             } else if event_name == "activity_ping" {
-                // Ignore heartbeat/ping events
+                // Silenced heartbeat/ping events to clean up logs
                 return Ok(());
             } else {
                 println!("[DEBUG] Unhandled Socket.io event: {} -> {:?}", event_name, event_data);

@@ -214,8 +214,8 @@ impl Handler {
                         tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
                     }
                 }
-                // Small delay to prevent tight loops in edge cases
-                tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
+                // 30s delay between accounts to prevent server overload / "session already running"
+                tokio::time::sleep(tokio::time::Duration::from_secs(30)).await;
             }
 
             {
