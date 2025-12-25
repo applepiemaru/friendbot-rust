@@ -69,7 +69,7 @@ impl EvertextClient {
             
             println!("[INFO] Connected! Session ID: {}", sid);
             
-            // 2. Send "40" to upgrade namespace
+            // 2. Initial Namespace Request
             ws_stream.send(Message::Text("40".into())).await?;
             
             let (write, read) = ws_stream.split();
@@ -101,14 +101,14 @@ impl EvertextClient {
         println!("[INFO][PID:{}] Starting session for account: {} (Mode: {:?})", std::process::id(), account.name, mode);
 
         let mut heartbeat_check = tokio::time::interval(Duration::from_secs(5));
-        let mut last_activity = Instant::now(); // Track game output activity
+        let mut last_activity = Instant::now(); 
 
         loop {
             tokio::select! {
                 _ = heartbeat_check.tick() => {
-                     // 1. Connection Heartbeat (Ping/Pong)
+                     // 1. Connection Heartbeat
                      if last_ping.elapsed().as_millis() as u64 > (self.ping_interval + 15000) {
-                         println!("[ERROR] Connection timed out (no heartbeat from server). Last ping: {} ms ago", last_ping.elapsed().as_millis());
+                         println!("[ERROR] Connection timed out (no heartbeat from server).");
                          return Err("CONNECTION_TIMEOUT".into());
                      }
 
@@ -118,13 +118,16 @@ impl EvertextClient {
                          return Err("ACTIVITY_TIMEOUT".into());
                      }
 
-                     // 3. Start Event Retry (Kick if stuck on black screen)
+                     // 3. Re-initialization if stuck on black screen
                      if let Some(sent_time) = start_sent_at {
                          if last_activity.elapsed().as_secs() > 25 && sent_time.elapsed().as_secs() > 25 {
-                             println!("[WARN] No activity for 25s after 'start'. Retrying initialization with fallback payload...");
-                             let retry_payload = json!(["start", {}]);
-                             let _ = self.write.send(Message::Text(format!("42{}", retry_payload.to_string()).into())).await;
-                             start_sent_at = None; // Only retry once
+                             println!("[WARN] Still no activity after 'start'. Retrying initialization with STOP + START sequence...");
+                             let stop_payload = json!(["stop", {"args": ""}]);
+                             let _ = self.write.send(Message::Text(format!("42{}", stop_payload.to_string()).into())).await;
+                             tokio::time::sleep(Duration::from_millis(1500)).await;
+                             let start_payload = json!(["start", {"args": ""}]);
+                             let _ = self.write.send(Message::Text(format!("42{}", start_payload.to_string()).into())).await;
+                             start_sent_at = Some(Instant::now()); // Reset timer
                          }
                      }
                 }
@@ -136,28 +139,25 @@ impl EvertextClient {
                             if text == "2" {
                                 self.write.send(Message::Text("3".into())).await?;
                                 last_ping = Instant::now();
-                            } else if text.starts_with("40") {
-                                println!("[INFO] Namespace joined. Initializing session...");
-                                
-                                println!("[ACTION] Sending 'stop' event...");
-                                let stop_payload = json!(["stop", {"args": ""}]); // Use full payload
-                                self.write.send(Message::Text(format!("42{}", stop_payload.to_string()).into())).await?;
-                                
-                                tokio::time::sleep(Duration::from_millis(2000)).await; // Higher delay for safety
-
-                                println!("[ACTION] Sending 'start' event...");
-                                let start_payload = json!(["start", {"args": ""}]); // RESTORE: This payload structure worked in v1.9 logs
-                                self.write.send(Message::Text(format!("42{}", start_payload.to_string()).into())).await?;
-                                last_activity = Instant::now(); 
-                                start_sent_at = Some(Instant::now());
-                            } else if text.starts_with("42") {
-                                if text.contains("output") {
-                                    last_activity = Instant::now();
+                            } else {
+                                if text.starts_with("40") {
+                                    println!("[INFO] Namespace joined. Initializing session...");
+                                    println!("[ACTION] Sending 'start' event...");
+                                    let start_payload = json!(["start", {"args": ""}]);
+                                    self.write.send(Message::Text(format!("42{}", start_payload.to_string()).into())).await?;
+                                    last_activity = Instant::now(); 
+                                    start_sent_at = Some(Instant::now());
+                                } else if text.starts_with("41") {
+                                    println!("[WARN] Received 41 (Session Disconnect). Attempting Re-join...");
+                                    self.write.send(Message::Text("40".into())).await?;
+                                } else if text.starts_with("42") {
+                                    if text.contains("output") {
+                                        last_activity = Instant::now();
+                                    }
+                                    self.handle_event(&text, &mut state, account, decrypted_code, &mut auto_sent, &mut handout_sent, mode).await?;
+                                } else if text.starts_with('4') {
+                                    println!("[DEBUG] Socket Message: {}", text);
                                 }
-                                self.handle_event(&text, &mut state, account, decrypted_code, &mut auto_sent, &mut handout_sent, mode).await?;
-                            } else if text.starts_with('4') {
-                                // Log other socket.io packets to identify "join" or "error" signals
-                                println!("[DEBUG] Socket Message: {}", text);
                             }
                         }
                         Some(Err(e)) => return Err(e.into()),
@@ -189,31 +189,27 @@ impl EvertextClient {
             if event_name == "output" {
                  if let Some(data) = event_data {
                      if let Some(output_text) = data["data"].as_str() {
-                         // Print terminal output
                          let clean_log = output_text.replace("\n", " ");
                          if !clean_log.trim().is_empty() {
-                             println!("[TERMINAL] {}", clean_log.chars().take(150).collect::<String>());
+                             println!("[TERMINAL] {}", clean_log.chars().take(200).collect::<String>());
                          }
                          
-                        // Update history for multi-line/chunked parsing
                         self.history.push_str(output_text);
-                        if self.history.len() > 10000 {
-                            let mut drain_len = self.history.len() - 10000;
+                        if self.history.len() > 15000 {
+                            let mut drain_len = self.history.len() - 15000;
                             while !self.history.is_char_boundary(drain_len) && drain_len > 0 { drain_len -= 1; }
                             self.history.replace_range(..drain_len, "");
                         }
 
-                         // --- ROBOT LOGIC USING HISTORY (Handles chunked/split text) ---
-                         
                          if self.history.contains("Enter Command to use") {
                              self.history = self.history.replace("Enter Command to use", "[PROCESSED_PROMPT]");
                              match mode {
                                  RunMode::Daily => {
-                                     println!("[ACTION] Prompt: 'Enter Command'. Sending 'd'...");
+                                     println!("[ACTION] Sending 'd'...");
                                      self.send_command("d").await?;
                                  },
                                  RunMode::Handout => {
-                                     println!("[ACTION] Prompt: 'Enter Command'. Sending 'ho'...");
+                                     println!("[ACTION] Sending 'ho'...");
                                      self.send_command("ho").await?;
                                  }
                              }
@@ -221,14 +217,13 @@ impl EvertextClient {
                          
                          if self.history.contains("Enter Restore code") {
                              self.history = self.history.replace("Enter Restore code", "[PROCESSED_CODE]");
-                             println!("[ACTION] Prompt: 'Enter Code'. Sending...");
+                             println!("[ACTION] Sending Restore Code...");
                              self.send_command(code).await?;
                          }
 
                          if self.history.contains("Which acc u want to Login") {
                              let target = account.target_server.as_deref().unwrap_or("Default");
                              if target != "Default" {
-                                 println!("[ACTION] Server Selection parsing for '{}'...", target);
                                  let re = Regex::new(r"(\d+)-->.*?\((.*?)\)").unwrap();
                                  let mut selected_index = "1".to_string();
                                  let mut found = false;
@@ -238,10 +233,11 @@ impl EvertextClient {
                                          found = true; break;
                                      }
                                  }
-                                 if !found { println!("[WARN] Target server '{}' not found in list.", target); }
-                                 println!("[ACTION] Selecting server index: {}", selected_index);
-                                 self.send_command(&selected_index).await?;
-                                 self.history = self.history.replace("Which acc u want to Login", "[PROCESSED_SERVER]");
+                                 if found {
+                                     println!("[ACTION] Selecting server index: {}", selected_index);
+                                     self.send_command(&selected_index).await?;
+                                     self.history = self.history.replace("Which acc u want to Login", "[PROCESSED_SERVER]");
+                                 }
                              }
                          }
 
@@ -275,52 +271,34 @@ impl EvertextClient {
                              }
                          }
 
-                         if self.history.contains("DO U WANT TO REFILL MANA") {
-                             self.history = self.history.replace("DO U WANT TO REFILL MANA", "[PROCESSED_REFILL]");
-                             println!("[ACTION] Sending 'y' for refill...");
-                             self.send_command("y").await?;
-                         }
-                         if self.history.contains("Enter 1, 2 or 3 to select potion") {
-                             self.history = self.history.replace("Enter 1, 2 or 3 to select potion", "[PROCESSED_POTION]");
-                             self.send_command("3").await?;
-                         }
-                         if self.history.contains("number of stam100 potions to refill") {
-                             self.history = self.history.replace("number of stam100 potions to refill", "[PROCESSED_QTY]");
-                             self.send_command("1").await?;
-                         }
-
                          if self.history.contains("Press y to perform more commands") {
-                             let low = self.history.to_lowercase();
-                             let is_actually_done = low.contains("success") || low.contains("finish") || 
-                                                     low.contains("done") || low.contains("already") || 
-                                                     *auto_sent || *handout_sent;
+                             let h_low = self.history.to_lowercase();
+                             let looks_done = h_low.contains("success") || h_low.contains("finish") || 
+                                              h_low.contains("done") || h_low.contains("already") || 
+                                              *auto_sent || *handout_sent;
 
-                             if is_actually_done {
-                                 println!("[INFO] Session complete trigger found in history.");
+                             if looks_done {
+                                 println!("[INFO] Work confirmed in history. Ending session.");
                                  return Err("SESSION_COMPLETE".into());
                              } else {
-                                 println!("[WARN] Exit prompt seen but work not confirmed. Returning to menu...");
+                                 println!("[WARN] Exit prompt seen but no work indicators found. Returning to menu...");
                                  self.history = self.history.replace("Press y to perform more commands", "[PROCESSED_Y]");
                                  self.send_command("y").await?;
                              }
                          }
 
-                         // --- ERROR SCANNING (History-based) ---
-                         if self.history.contains("Zigza error") || self.history.contains("Incorrect Restore Code") {
-                             println!("[ERROR] Zigza/Code Error Detected!");
+                         let h_low = self.history.to_lowercase();
+                         if h_low.contains("zigza error") || h_low.contains("incorrect restore code") {
+                             println!("[ERROR] Account Error Detected (Zigza/Code)!");
                              return Err("ZIGZA_DETECTED".into());
                          }
-                         if self.history.contains("maximum limit of restore accounts") {
-                             println!("[ERROR] Server Full!");
+                         if h_low.contains("maximum limit of restore") {
+                             println!("[ERROR] Server Capacity Error!");
                              return Err("SERVER_FULL".into());
                          }
-                         if self.history.contains("restricted only for logged in users") {
-                             println!("[ERROR] Cookie Expired!");
+                         if h_low.contains("logged in users") {
+                             println!("[ERROR] Session Expired / Login Required!");
                              return Err("LOGIN_REQUIRED".into());
-                         }
-                         if self.history.contains("Invalid Command") && self.history.contains("Exiting Now") {
-                             println!("[ERROR] Invalid Command Loop!");
-                             return Err("INVALID_COMMAND_RESTART".into());
                          }
                      }
                  }
