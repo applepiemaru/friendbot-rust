@@ -6,19 +6,19 @@
       "targetServer": "E-26",
       "lastRun": null,
       "status": "idle",
-      "code": "U2FsdGVkX1/s6IgqjWDVrml91pXsyAX+BpWuAM0NBVk=",
       "pingEnabled": false,
-      "handoutEnabled": false
+      "handoutEnabled": false,
+      "code": "ACL1E1QR1B2F"
     },
     {
       "id": "1766226495457",
       "name": "flutter",
       "targetServer": "E-56",
       "lastRun": null,
-      "status": "error",
-      "code": "U2FsdGVkX195WJFWcVSj6x36wKV0k9v+KZI+N/1nQJQ=",
+      "status": "idle",
       "pingEnabled": false,
-      "handoutEnabled": false
+      "handoutEnabled": false,
+      "code": "AVXKEPZZQQN5"
     },
     {
       "id": "1766233519234",
@@ -26,9 +26,9 @@
       "targetServer": "E-56",
       "lastRun": null,
       "status": "idle",
-      "code": "U2FsdGVkX18mX6Q5URCk5HZVuyeZOCI1XtZFI8/uDp4=",
       "pingEnabled": false,
-      "handoutEnabled": false
+      "handoutEnabled": false,
+      "code": "VG74BQ8MP3ZM"
     },
     {
       "id": "1766233572515",
@@ -36,9 +36,9 @@
       "targetServer": "E56",
       "lastRun": null,
       "status": "idle",
-      "code": "U2FsdGVkX1/ORpacoAxqt3yn5eBCba44N0krqDn4M5E=",
       "pingEnabled": false,
-      "handoutEnabled": false
+      "handoutEnabled": false,
+      "code": "M7VA8V9NAEV8"
     },
     {
       "id": "1766233621229",
@@ -46,9 +46,9 @@
       "targetServer": "E-56",
       "lastRun": null,
       "status": "idle",
-      "code": "U2FsdGVkX18JuHj+KV3Y7WzemQdLn4m0MgOSpAWOJqs=",
       "pingEnabled": false,
-      "handoutEnabled": false
+      "handoutEnabled": false,
+      "code": "7Q6K6EMYF6HM"
     },
     {
       "id": "1766233658616",
@@ -56,9 +56,9 @@
       "targetServer": "E-56",
       "lastRun": null,
       "status": "idle",
-      "code": "U2FsdGVkX18X8OnL5VOPput2gd6u3PCJRZ6v3j7/L4Q=",
       "pingEnabled": false,
-      "handoutEnabled": false
+      "handoutEnabled": false,
+      "code": "3ATATVFWG5B0"
     },
     {
       "id": "1766233704933",
@@ -66,9 +66,9 @@
       "targetServer": "E-56",
       "lastRun": null,
       "status": "idle",
-      "code": "U2FsdGVkX19I5e+uzBSvLK37Mpr+MmYXq4aXjTEcy9I=",
       "pingEnabled": false,
-      "handoutEnabled": false
+      "handoutEnabled": false,
+      "code": "1B8QMV8GH6Z1"
     },
     {
       "id": "1766233758875",
@@ -76,9 +76,9 @@
       "targetServer": "E-56",
       "lastRun": null,
       "status": "idle",
-      "code": "U2FsdGVkX18219u8jzw3eziI7crUDoPx9MH3VmkyQ5E=",
       "pingEnabled": false,
-      "handoutEnabled": false
+      "handoutEnabled": false,
+      "code": "M2H1ZZDZHZ1V"
     },
     {
       "id": "1766233790525",
@@ -86,9 +86,9 @@
       "targetServer": "E-56",
       "lastRun": null,
       "status": "idle",
-      "code": "U2FsdGVkX19MrpbGO+z2voyMg4wyQTbEAJcYuk8rfJg=",
       "pingEnabled": false,
-      "handoutEnabled": false
+      "handoutEnabled": false,
+      "code": "4Y01KMBZ1A2P"
     },
     {
       "id": "1766233818699",
@@ -96,9 +96,9 @@
       "targetServer": "E-56",
       "lastRun": null,
       "status": "idle",
-      "code": "U2FsdGVkX1/CElPbX5FSs/yADTL3GrGxeG7KLEwNcxU=",
       "pingEnabled": false,
-      "handoutEnabled": false
+      "handoutEnabled": false,
+      "code": "CL0J2FWF8JPP"
     },
     {
       "id": "1766233861749",
@@ -106,9 +106,9 @@
       "targetServer": "e-56",
       "lastRun": null,
       "status": "idle",
-      "code": "U2FsdGVkX1+ac/iHwv2WGNar/7fOkqM2fAyfNOLtFIY=",
       "pingEnabled": false,
-      "handoutEnabled": false
+      "handoutEnabled": false,
+      "code": "W1YX2DG9C7EC"
     },
     {
       "id": "1766233902249",
@@ -116,9 +116,9 @@
       "targetServer": "E-56",
       "lastRun": null,
       "status": "idle",
-      "code": "U2FsdGVkX1+d1K8IoJFWvFsDwa5++LA79+hdszA5Kc4=",
       "pingEnabled": false,
-      "handoutEnabled": false
+      "handoutEnabled": false,
+      "code": "34AKYFZ2G55N"
     },
     {
       "id": "1766236866328",
@@ -126,9 +126,9 @@
       "targetServer": "E-56",
       "lastRun": null,
       "status": "idle",
-      "code": "U2FsdGVkX18CbIZOAt2sDgEkBWV/UMfNA5IPZedOIGs=",
       "pingEnabled": false,
-      "handoutEnabled": false
+      "handoutEnabled": false,
+      "code": "L9BCJ51E6J23"
     },
     {
       "id": "1766236893878",
@@ -136,9 +136,9 @@
       "targetServer": "E-56",
       "lastRun": null,
       "status": "idle",
-      "code": "U2FsdGVkX19lsZgp9we2IIhohsCTwwRIP6TWUqaWZdE=",
       "pingEnabled": false,
-      "handoutEnabled": false
+      "handoutEnabled": false,
+      "code": "WLX0JZ5Z1NFA"
     },
     {
       "id": "1766236928634",
@@ -146,9 +146,9 @@
       "targetServer": "E-56",
       "lastRun": null,
       "status": "idle",
-      "code": "U2FsdGVkX19vRxgCjT1AqPocUhmeQrQ6lFcyGpm7MUo=",
       "pingEnabled": false,
-      "handoutEnabled": false
+      "handoutEnabled": false,
+      "code": "RLE356N6LQ00"
     },
     {
       "id": "1766236972190",
@@ -156,9 +156,9 @@
       "targetServer": "E-56",
       "lastRun": null,
       "status": "idle",
-      "code": "U2FsdGVkX1+u6xj/8159r3x/SHzIOS+AXiCJi5Z3asE=",
       "pingEnabled": false,
-      "handoutEnabled": false
+      "handoutEnabled": false,
+      "code": "NH4MMHY2CA325"
     },
     {
       "id": "1766237005834",
@@ -166,9 +166,9 @@
       "targetServer": "E-56",
       "lastRun": null,
       "status": "idle",
-      "code": "U2FsdGVkX19KYVO+O3yZQEQmmFEMS8dxWzzPRGAuafM=",
       "pingEnabled": false,
-      "handoutEnabled": false
+      "handoutEnabled": false,
+      "code": "6646M3CRJWHH"
     },
     {
       "id": "1766237032336",
@@ -176,9 +176,9 @@
       "targetServer": "E-56",
       "lastRun": null,
       "status": "idle",
-      "code": "U2FsdGVkX1/sz5M9yjj3FW9ggn0TMqi6x/tFo6WMVZk=",
       "pingEnabled": false,
-      "handoutEnabled": false
+      "handoutEnabled": false,
+      "code": "XJATNCDDAYRR"
     },
     {
       "id": "1766240017584",
@@ -186,9 +186,9 @@
       "targetServer": "E-56",
       "lastRun": "2025-12-20T22:19:05.268Z",
       "status": "idle",
-      "code": "U2FsdGVkX1/xEYEkfrUYqBDyJvjHONcZMuuhV/1q+Go=",
       "pingEnabled": false,
-      "handoutEnabled": false
+      "handoutEnabled": false,
+      "code": "XJATNCDDAYRR"
     },
     {
       "id": "1766274227978",
@@ -196,9 +196,9 @@
       "targetServer": "E-56",
       "lastRun": "2025-12-20T23:48:48.159Z",
       "status": "idle",
-      "code": "U2FsdGVkX1/gGzMTZdSSJvRaIJndR6+y4LT6/b5uZTI=",
       "pingEnabled": false,
-      "handoutEnabled": false
+      "handoutEnabled": false,
+      "code": "NH4MMHY2CA32"
     },
     {
       "id": "1766288631636",
@@ -206,19 +206,19 @@
       "targetServer": "E-60",
       "lastRun": "2025-12-21T03:48:45.606Z",
       "status": "idle",
-      "code": "U2FsdGVkX1+w3x2nnKilao/aDfeezQ4p4cwlTI+F5Yg=",
       "pingEnabled": false,
-      "handoutEnabled": false
+      "handoutEnabled": false,
+      "code": "ZRZ06ZWWFC7F"
     },
     {
       "id": "1766317201231",
       "name": "meowth",
       "targetServer": "E-56",
       "lastRun": null,
-      "status": "error",
-      "code": "U2FsdGVkX19NULGs6lcHUqOi70kqj3ZyfJX5kL9EPUk=",
+      "status": "idle",
       "pingEnabled": false,
-      "handoutEnabled": false
+      "handoutEnabled": false,
+      "code": "3GNGYEW1PKP8"
     },
     {
       "id": "1766367174661",
@@ -226,9 +226,9 @@
       "targetServer": "54",
       "lastRun": "2025-12-22T08:11:27.787Z",
       "status": "idle",
-      "code": "U2FsdGVkX1/VRIQkCdd6a7jYwXCxImV1WOMyXrezWps=",
       "pingEnabled": false,
-      "handoutEnabled": false
+      "handoutEnabled": false,
+      "code": "GZ3AXPHDKR57"
     },
     {
       "id": "1766367207741",
@@ -236,9 +236,9 @@
       "targetServer": "e54",
       "lastRun": "2025-12-22T08:16:17.106Z",
       "status": "idle",
-      "code": "U2FsdGVkX1+H6bsMo603CWLjw8AChpVcz8tjSRWrM2A=",
       "pingEnabled": false,
-      "handoutEnabled": false
+      "handoutEnabled": false,
+      "code": "ZTRCQHG8FXA5"
     },
     {
       "id": "1766367259887",
@@ -246,9 +246,9 @@
       "targetServer": "E-54",
       "lastRun": "2025-12-22T08:21:05.437Z",
       "status": "idle",
-      "code": "U2FsdGVkX19iOMjpqDVoTv4pt6Aom/pfqDqYzHPnRas=",
       "pingEnabled": false,
-      "handoutEnabled": false
+      "handoutEnabled": false,
+      "code": "7W5F2JCTT52B"
     },
     {
       "id": "1766367302077",
@@ -256,9 +256,9 @@
       "targetServer": "E- 54",
       "lastRun": "2025-12-22T08:25:53.782Z",
       "status": "idle",
-      "code": "U2FsdGVkX18zngNqBRm3PHdrGnMmxJbG2Fy/cMBbhMQ=",
       "pingEnabled": false,
-      "handoutEnabled": false
+      "handoutEnabled": false,
+      "code": "T7TTCEC3WD95"
     },
     {
       "id": "1766367350052",
@@ -266,9 +266,9 @@
       "targetServer": "E-54",
       "lastRun": "2025-12-22T08:30:42.232Z",
       "status": "idle",
-      "code": "U2FsdGVkX1+VT0P6YagQxdBz0pM5wM/nh9VTiyt0EEI=",
       "pingEnabled": false,
-      "handoutEnabled": false
+      "handoutEnabled": false,
+      "code": "EPLK2AZTP5AP"
     },
     {
       "id": "1766367389217",
@@ -276,9 +276,9 @@
       "targetServer": "E-54",
       "lastRun": "2025-12-22T08:35:30.593Z",
       "status": "idle",
-      "code": "U2FsdGVkX1+/BQ0oxMlKRRzc+ol75naW812ilEmbuM4=",
       "pingEnabled": false,
-      "handoutEnabled": false
+      "handoutEnabled": false,
+      "code": "R846Q0JPMPKM"
     },
     {
       "id": "1766367452070",
@@ -286,9 +286,9 @@
       "targetServer": "E-54",
       "lastRun": "2025-12-22T08:40:19.027Z",
       "status": "idle",
-      "code": "U2FsdGVkX19Fa+7StHA0+lWJ6AcvST/Q5hseQRPUCmo=",
       "pingEnabled": false,
-      "handoutEnabled": false
+      "handoutEnabled": false,
+      "code": "TFBPY722T3QC"
     },
     {
       "id": "1766367638367",
@@ -296,9 +296,9 @@
       "targetServer": "E-54",
       "lastRun": "2025-12-22T08:45:20.935Z",
       "status": "idle",
-      "code": "U2FsdGVkX1+u9gu6FA27cu0VE4u1ytWIcJr9qrzk3oXihB+yRZBaEeta5CLLp3uy",
       "pingEnabled": false,
-      "handoutEnabled": false
+      "handoutEnabled": false,
+      "code": "VE0MN3G39L6B\nEojka"
     },
     {
       "id": "1766367713526",
@@ -306,9 +306,9 @@
       "targetServer": "E-54",
       "lastRun": "2025-12-22T08:50:08.990Z",
       "status": "idle",
-      "code": "U2FsdGVkX1/xx23hAnsbVzYhJ53nlKOaHISUt9pXYEX0fv0yOW6viLl6DLOKXZ8v",
       "pingEnabled": false,
-      "handoutEnabled": false
+      "handoutEnabled": false,
+      "code": "P0X7J5M3XEA5\nmajor racist"
     },
     {
       "id": "1766367824315",
@@ -316,9 +316,9 @@
       "targetServer": "E-54",
       "lastRun": "2025-12-22T08:54:57.318Z",
       "status": "idle",
-      "code": "U2FsdGVkX1/fiUKadgjEjKtvjunGSEn1ZDQNMImCGGk=",
       "pingEnabled": false,
-      "handoutEnabled": false
+      "handoutEnabled": false,
+      "code": "5FWCW18R5409"
     },
     {
       "id": "1766367881694",
@@ -326,9 +326,9 @@
       "targetServer": "E-54",
       "lastRun": "2025-12-22T08:59:47.532Z",
       "status": "idle",
-      "code": "U2FsdGVkX1+sRD9cmpjmfo1rVGPV1xAfHsRcO2SwDN4=",
       "pingEnabled": false,
-      "handoutEnabled": false
+      "handoutEnabled": false,
+      "code": "16P8GJHM9WD4"
     },
     {
       "id": "1766367911027",
@@ -336,9 +336,9 @@
       "targetServer": "E-54",
       "lastRun": "2025-12-22T09:04:37.853Z",
       "status": "idle",
-      "code": "U2FsdGVkX1+PzBcXh08/isEe4BdWCykrLj/5OZbFPJI=",
       "pingEnabled": false,
-      "handoutEnabled": false
+      "handoutEnabled": false,
+      "code": "3HELAZKDWAR4"
     },
     {
       "id": "1766367946619",
@@ -346,9 +346,9 @@
       "targetServer": "E- 54",
       "lastRun": "2025-12-22T09:09:29.439Z",
       "status": "idle",
-      "code": "U2FsdGVkX1/DsMG9tg0lPXUJbN7Mg3PHo2M6ybYI3w4=",
       "pingEnabled": false,
-      "handoutEnabled": false
+      "handoutEnabled": false,
+      "code": "A968ZFHLVABR"
     },
     {
       "id": "1766367969694",
@@ -356,9 +356,9 @@
       "targetServer": "E-54",
       "lastRun": "2025-12-22T09:14:20.812Z",
       "status": "idle",
-      "code": "U2FsdGVkX19v7OQFDaojD1BAWnOB4gkzGcGER28UW40=",
       "pingEnabled": false,
-      "handoutEnabled": false
+      "handoutEnabled": false,
+      "code": "JX65L8AYM86Z"
     },
     {
       "id": "1766406260506",
@@ -366,9 +366,9 @@
       "targetServer": "e-54",
       "lastRun": null,
       "status": "idle",
-      "code": "U2FsdGVkX1+25mY+ORXc8Wd2ACTpIIE0L/N6xdIopmA=",
       "pingEnabled": false,
-      "handoutEnabled": false
+      "handoutEnabled": false,
+      "code": "YZH4B3BK1QAR"
     },
     {
       "id": "1766406302113",
@@ -376,9 +376,9 @@
       "targetServer": "e-54",
       "lastRun": null,
       "status": "idle",
-      "code": "U2FsdGVkX19sz1S08VBhRCjwFNBqpgP5uh6JBbvKm9k=",
       "pingEnabled": false,
-      "handoutEnabled": false
+      "handoutEnabled": false,
+      "code": "LE2D1ZWM2G04"
     },
     {
       "id": "1766406338965",
@@ -386,9 +386,9 @@
       "targetServer": "E-54",
       "lastRun": null,
       "status": "idle",
-      "code": "U2FsdGVkX18bo96LrzONP2DK4T+N/tRLYsSfbHqQvx8=",
       "pingEnabled": false,
-      "handoutEnabled": false
+      "handoutEnabled": false,
+      "code": "6X7VXJ9HVV3C"
     },
     {
       "id": "1766406382649",
@@ -396,9 +396,9 @@
       "targetServer": "E-54",
       "lastRun": null,
       "status": "idle",
-      "code": "U2FsdGVkX18zw8dzajiQwoWtETFVHkXZS10O2VRYXx4=",
       "pingEnabled": false,
-      "handoutEnabled": false
+      "handoutEnabled": false,
+      "code": "3E9AK7ACN83W"
     },
     {
       "id": "1766406407048",
@@ -406,9 +406,9 @@
       "targetServer": "e-54",
       "lastRun": null,
       "status": "idle",
-      "code": "U2FsdGVkX18KG496It+0tlXZZCK7W0/t9LaYkEjDVRs=",
       "pingEnabled": false,
-      "handoutEnabled": false
+      "handoutEnabled": false,
+      "code": "HCH38Y882YL3"
     },
     {
       "id": "1766406436561",
@@ -416,9 +416,9 @@
       "targetServer": "E-54",
       "lastRun": null,
       "status": "idle",
-      "code": "U2FsdGVkX18xNjArjFQgZHbfArk2vDZ1rynRIJYo1D4=",
       "pingEnabled": false,
-      "handoutEnabled": false
+      "handoutEnabled": false,
+      "code": "8RWJ8B7DY8W2"
     },
     {
       "id": "1766406462397",
@@ -426,9 +426,9 @@
       "targetServer": "e-54",
       "lastRun": null,
       "status": "idle",
-      "code": "U2FsdGVkX19Oa/afLmEbmJ6bkljdfr2YsVxXiEBwm7A=",
       "pingEnabled": false,
-      "handoutEnabled": false
+      "handoutEnabled": false,
+      "code": "LG38X8YNW5VR"
     },
     {
       "id": "1766406491140",
@@ -436,9 +436,9 @@
       "targetServer": "e-54",
       "lastRun": null,
       "status": "idle",
-      "code": "U2FsdGVkX1/Z9zbasZX/2Pf889l+EhqdQSh0qbEHI88=",
       "pingEnabled": false,
-      "handoutEnabled": false
+      "handoutEnabled": false,
+      "code": "72CZQR2FAJ6R"
     },
     {
       "id": "1766406520623",
@@ -446,9 +446,9 @@
       "targetServer": "E-54",
       "lastRun": null,
       "status": "idle",
-      "code": "U2FsdGVkX19EGEgfcp/tjIx0Tp6nVPUgo54PPa6vJPs=",
       "pingEnabled": false,
-      "handoutEnabled": false
+      "handoutEnabled": false,
+      "code": "L96rbvp1xc47"
     },
     {
       "id": "1766406543107",
@@ -456,9 +456,9 @@
       "targetServer": "E-54",
       "lastRun": null,
       "status": "idle",
-      "code": "U2FsdGVkX18n8gNQ9fVHrr44SNBlFz5H127LiziDtdQ=",
       "pingEnabled": false,
-      "handoutEnabled": false
+      "handoutEnabled": false,
+      "code": "HXR5YL9JC8KJ"
     },
     {
       "id": "1766406562083",
@@ -466,9 +466,9 @@
       "targetServer": "e-54",
       "lastRun": null,
       "status": "idle",
-      "code": "U2FsdGVkX1/wajqxf1wc7bMu3xK1iSWDb4o0Y3eHRso=",
       "pingEnabled": false,
-      "handoutEnabled": false
+      "handoutEnabled": false,
+      "code": "RACWEA2GVLLL"
     },
     {
       "id": "1766406609878",
@@ -476,9 +476,9 @@
       "targetServer": "e-54",
       "lastRun": null,
       "status": "idle",
-      "code": "U2FsdGVkX19kt9EK9g5J9gTuiAJLJHUej5MglyXfngI=",
       "pingEnabled": false,
-      "handoutEnabled": false
+      "handoutEnabled": false,
+      "code": "J5K0WRR8MV3V"
     },
     {
       "id": "1766406630805",
@@ -486,9 +486,9 @@
       "targetServer": "E-54",
       "lastRun": null,
       "status": "idle",
-      "code": "U2FsdGVkX18HiA/8SwKJJHKW7GYKjFGo4a8i5ZFyqi8=",
       "pingEnabled": false,
-      "handoutEnabled": false
+      "handoutEnabled": false,
+      "code": "2PC997FNMTM6"
     },
     {
       "id": "1766406680882",
@@ -496,9 +496,9 @@
       "targetServer": "e-54",
       "lastRun": null,
       "status": "idle",
-      "code": "U2FsdGVkX1+RJawX+GWcJQ0KlvXUYrSLerFBOWmaUlY=",
       "pingEnabled": false,
-      "handoutEnabled": false
+      "handoutEnabled": false,
+      "code": "MF3Q4C31LPKL"
     },
     {
       "id": "1766406739490",
@@ -506,15 +506,15 @@
       "targetServer": "e-54",
       "lastRun": null,
       "status": "idle",
-      "code": "U2FsdGVkX1/ctT4vNj8WQvcfgRYmuWjqpD1wyBcrsjc=",
       "pingEnabled": false,
-      "handoutEnabled": false
+      "handoutEnabled": false,
+      "code": "GH028CT3NQ0D"
     }
   ],
   "settings": {
     "scheduleStart": "22:00",
     "scheduleEnd": "18:00",
-    "cookies": ".eJw9kFtPwkAQhf9Ln63p3mY7vDU0RhNLoyDYJ7KXWQGlxZZLwPjf3UhCMk8nc875cn6SZehpWCWjfX-gu2S59skoEYopTxq1Nhwk12ARnXGGlFdBeG2yIEMwlmxGqI2WigRp5nJmXXDMKa6IKfBEQkIGKDyPpyWHLHNMiBCIBTQEXIBTudTGK3TAyYbAlbVJBNlRvzUttfsb2mGg_sqnkQHXKDOMbEJJBdFhnKNhWO67T2rjTzV7yery6VxtqvOkLM512Zzq8k1Up_uO2nY1nvdWTHd1cWxmdtvMF4-nrwtMx68xqqf_UW5ZH3ajLu_FccJ2g790Lc5lXXw3_XOxgIdJNAyxed21VzokljOGPNWQs1Ryp1KU1qWGBQfeYBRY8vsHzpxyhg.aUzhwg.eRYiTepn7u0s8BPGmOTeBM7aCPA",
+    "cookies": "",
     "admins": []
   }
 }
