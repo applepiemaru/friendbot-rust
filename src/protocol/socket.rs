@@ -306,8 +306,17 @@ impl EvertextClient {
                          // --- 5. End of Loop ---
                          // "Press y to perform more commands:"
                          if output_text.contains("Press y to perform more commands") {
-                             println!("[INFO] Prompt: 'Perform more commands'. Run Complete.");
-                             return Err("SESSION_COMPLETE".into()); // Trigger clean exit
+                             // Only exit if we've actually done work OR it's clearly finished/already done
+                             if *auto_sent || *handout_sent || output_text.contains("already") || output_text.contains("Finish") || output_text.contains("Success") {
+                                 println!("[INFO] Prompt: 'Perform more commands'. Run Complete.");
+                                 return Err("SESSION_COMPLETE".into()); // Trigger clean exit
+                             } else {
+                                 println!("[WARN] Seen exit prompt but no work confirmed (*auto_sent: {}, *handout_sent: {}). Retrying command...", *auto_sent, *handout_sent);
+                                 match mode {
+                                     RunMode::Daily => self.send_command("d").await?,
+                                     RunMode::Handout => self.send_command("ho").await?,
+                                 }
+                             }
                          }
 
                          // --- 6. Error Handling ---
