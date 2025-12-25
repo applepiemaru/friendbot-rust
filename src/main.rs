@@ -805,12 +805,6 @@ impl EventHandler for Handler {
                         content = "✅ All account statuses reset to **Pending**.".to_string();
                     }
                 },
-                                 content = format!("**{}** is already in Handout list.", name);
-                             },
-                             Err(_) => content = format!("Account **{}** not found.", name),
-                         }
-                    }
-                },
                 "ho_remove" => {
                     if !self.is_admin(&ctx, &command).await {
                          content = "Admin permissions required.".to_string();
