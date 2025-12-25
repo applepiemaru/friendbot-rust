@@ -103,8 +103,17 @@ impl Handler {
                         .collect();
                     
                     if let Some(uid) = &user_id_filter {
-                        accs.retain(|a| a.user_id.as_deref() == Some(uid));
+                        println!("[DEBUG] Filtering queue for User ID: {}", uid);
+                        accs.retain(|a| {
+                            let match_found = a.user_id.as_deref() == Some(uid);
+                            if !match_found {
+                                // println!("[DEBUG] Skipping {} (Owner: {:?})", a.name, a.user_id);
+                            }
+                            match_found
+                        });
                     }
+                    
+                    println!("[DEBUG] Found {} pending accounts for this user.", accs.len());
                     
                     // Explicitly prioritize:
                     // 1. Pending accounts (in insertion order)
