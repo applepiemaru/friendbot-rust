@@ -139,8 +139,7 @@ impl Database {
         };
 
         match serde_json::from_str::<DbData>(&content) {
-                Ok(Self { data })
-            },
+            Ok(data) => Ok(Self { data }),
             Err(e) => {
                 println!("[ERROR] Failed to parse database JSON: {}", e);
                 // If parsing fails, we might as well return the error, 
