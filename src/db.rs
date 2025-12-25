@@ -80,6 +80,14 @@ impl Database {
     pub fn load() -> Result<Self, Box<dyn std::error::Error + Send + Sync>> {
         let path = std::env::var("DATABASE_PATH").unwrap_or_else(|_| "db.json".to_string());
         
+        // --- FORCE RESET LOGIC ---
+        if std::env::var("RESET_DB").unwrap_or_default() == "true" {
+            println!("[WARN] RESET_DB is TRUE! Overwriting {} with clean embedded database...", path);
+            let embedded = include_str!("../db.json");
+            fs::write(&path, embedded)?;
+        }
+        // -------------------------
+        
         // --- Diagnostics ---
         if let Ok(cwd) = std::env::current_dir() {
             println!("[DEBUG] Current working directory: {:?}", cwd);
