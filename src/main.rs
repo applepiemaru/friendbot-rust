@@ -890,18 +890,30 @@ impl EventHandler for Handler {
 
 #[tokio::main]
 async fn main() {
+    // --- Zeabur Health Check Server (Immediate Start) ---
+    tokio::spawn(async move {
+        use warp::Filter;
+        let health_route = warp::path::end().map(|| "FriendBot is Alive!");
+        let port = std::env::var("PORT").unwrap_or_else(|_| "8080".to_string()).parse::<u16>().unwrap_or(8080);
+        println!("[INFO] Health Check Server listening on port {}", port);
+        warp::serve(health_route).run(([0, 0, 0, 0], port)).await;
+    });
+
     dotenv::dotenv().ok();
     env_logger::init();
     
-    let token = std::env::var("DISCORD_TOKEN").expect("Expected a DISCORD_TOKEN in the environment");
+    let token = std::env::var("DISCORD_TOKEN").unwrap_or_default();
+    if token.is_empty() {
+        println!("[CRITICAL] DISCORD_TOKEN is missing! Keeping health check alive for debugging.");
+        loop { tokio::time::sleep(tokio::time::Duration::from_secs(60)).await; }
+    }
+
     let database_res = Database::load();
     let database = match database_res {
         Ok(db) => Arc::new(Mutex::new(db)),
         Err(e) => {
-            println!("[CRITICAL] Failed to load database: {}. Bot may not function correctly.", e);
-            // We still need a database object to continue, so we'll try to create a dummy one if possible
-            // or just exit gracefully instead of panicking.
-            return; 
+            println!("[CRITICAL] Failed to load database: {}. Creating fallback...", e);
+            loop { tokio::time::sleep(tokio::time::Duration::from_secs(60)).await; }
         }
     };
     
@@ -911,15 +923,6 @@ async fn main() {
     };
 
     let intents = GatewayIntents::GUILD_MESSAGES | GatewayIntents::DIRECT_MESSAGES | GatewayIntents::MESSAGE_CONTENT;
-
-    // --- Zeabur Health Check Server ---
-    tokio::spawn(async move {
-        use warp::Filter;
-        let health_route = warp::path::end().map(|| "FriendBot is Alive!");
-        let port = std::env::var("PORT").unwrap_or_else(|_| "8080".to_string()).parse::<u16>().unwrap_or(8080);
-        println!("[INFO] Health Check Server listening on port {}", port);
-        warp::serve(health_route).run(([0, 0, 0, 0], port)).await;
-    });
 
     println!("[INFO] Starting EverText Rust Bot...");
     let mut client = Client::builder(&token, intents)
