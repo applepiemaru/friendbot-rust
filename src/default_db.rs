@@ -568,4 +568,5 @@ pub const DEFAULT_DB_JSON: &str = r#"{
     "cookies": "",
     "admins": []
   }
-}";
+}
+"#;
