@@ -120,10 +120,10 @@ impl EvertextClient {
 
                      // 3. Start Event Retry (Kick if stuck on black screen)
                      if let Some(sent_time) = start_sent_at {
-                         if last_activity.elapsed().as_secs() > 20 && sent_time.elapsed().as_secs() > 20 {
-                             println!("[WARN] No activity for 20s after 'start'. Retrying initialization...");
-                             let start_payload = json!(["start", {"args": ""}]);
-                             let _ = self.write.send(Message::Text(format!("42{}", start_payload.to_string()).into())).await;
+                         if last_activity.elapsed().as_secs() > 25 && sent_time.elapsed().as_secs() > 25 {
+                             println!("[WARN] No activity for 25s after 'start'. Retrying initialization with fallback payload...");
+                             let retry_payload = json!(["start", {}]);
+                             let _ = self.write.send(Message::Text(format!("42{}", retry_payload.to_string()).into())).await;
                              start_sent_at = None; // Only retry once
                          }
                      }
@@ -140,13 +140,13 @@ impl EvertextClient {
                                 println!("[INFO] Namespace joined. Initializing session...");
                                 
                                 println!("[ACTION] Sending 'stop' event...");
-                                let stop_payload = json!(["stop", {}]);
+                                let stop_payload = json!(["stop", {"args": ""}]); // Use full payload
                                 self.write.send(Message::Text(format!("42{}", stop_payload.to_string()).into())).await?;
                                 
-                                tokio::time::sleep(Duration::from_millis(1500)).await;
+                                tokio::time::sleep(Duration::from_millis(2000)).await; // Higher delay for safety
 
                                 println!("[ACTION] Sending 'start' event...");
-                                let start_payload = json!(["start", {}]);
+                                let start_payload = json!(["start", {"args": ""}]); // RESTORE: This payload structure worked in v1.9 logs
                                 self.write.send(Message::Text(format!("42{}", start_payload.to_string()).into())).await?;
                                 last_activity = Instant::now(); 
                                 start_sent_at = Some(Instant::now());
@@ -155,6 +155,9 @@ impl EvertextClient {
                                     last_activity = Instant::now();
                                 }
                                 self.handle_event(&text, &mut state, account, decrypted_code, &mut auto_sent, &mut handout_sent, mode).await?;
+                            } else if text.starts_with('4') {
+                                // Log other socket.io packets to identify "join" or "error" signals
+                                println!("[DEBUG] Socket Message: {}", text);
                             }
                         }
                         Some(Err(e)) => return Err(e.into()),
