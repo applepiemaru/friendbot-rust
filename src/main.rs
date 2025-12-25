@@ -1,5 +1,6 @@
 mod protocol;
 mod db;
+mod default_db;
 
 use protocol::socket::{EvertextClient, RunMode};
 use db::{Database, Account};

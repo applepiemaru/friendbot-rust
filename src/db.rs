@@ -83,7 +83,7 @@ impl Database {
         // --- FORCE RESET LOGIC ---
         if std::env::var("RESET_DB").unwrap_or_default() == "true" {
             println!("[WARN] RESET_DB is TRUE! Overwriting {} with clean embedded database...", path);
-            let embedded = include_str!("../db.json");
+            let embedded = crate::default_db::DEFAULT_DB_JSON;
             fs::write(&path, embedded)?;
         }
         // -------------------------
@@ -132,7 +132,7 @@ impl Database {
                     },
                     None => {
                         println!("[WARN] No database file found on disk. Using EMBEDDED database fallback.");
-                        let embedded = include_str!("../db.json").to_string();
+                        let embedded = crate::default_db::DEFAULT_DB_JSON.to_string();
                         // AUTO-RESTORE: Write the embedded content to disk so we can save later
                         let restore_path = "db.json";
                         if let Err(e) = fs::write(restore_path, &embedded) {
