@@ -139,12 +139,6 @@ impl Database {
         };
 
         match serde_json::from_str::<DbData>(&content) {
-            Ok(mut data) => {
-                // AUTO-FIX: Inject cookie if missing (handles persistent DBs that are outdated)
-                if data.settings.cookies.is_none() || data.settings.cookies.as_deref() == Some("") {
-                    println!("[INFO] Database missing cookies. Injecting hardcoded fallback...");
-                    data.settings.cookies = Some(".eJw9kE1PwkAURf9L19bM53sz7MCSiLEQCAZxQ6Yzb0JFimmLZDT-dxtJ2N9z78n9yXaxpW6fjfr2THfZrg7ZKBPOMxcCGImBg9XCSM2FR14pHylUgXylIzlmLEgEDZJZFi0ox9FWnnvHMESUqHgQIISh6IXFYB0HJY2RMRquNQengjDeVgGF5SS0AWW9xmwQ-aT26Bpq-pvauaP26gfGACBKiUZpAcaygXDeU9ft-tOBmiFTrpdsUcxS-V6meTFOi2J7WRQvsrzcLz_eutI2doLfM_RRjpsJw1U9fV0fVdoPVS39n3Lr2m76qXyarfrmec3S4avcz-vObdLpUT4kPgDdsFyfmqudJhHBcJdHwVWuQoTcKRZztBDIABGBzH7_AJH3cHo.aUfevg.jxs6uzzbGWzu01-Fq_ecwOIFios".to_string());
-                }
                 Ok(Self { data })
             },
             Err(e) => {

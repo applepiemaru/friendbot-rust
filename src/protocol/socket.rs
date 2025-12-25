@@ -123,11 +123,14 @@ impl EvertextClient {
                                 self.write.send(Message::Text("3".into())).await?;
                                 last_ping = Instant::now();
                             } else if text.starts_with("40") {
-                                // ... (existing code)
                                 println!("[INFO] Namespace joined. Initializing session...");
+                                
+                                // Restore 'stop' command to reset terminal state (matching original repo)
                                 let stop_payload = json!(["stop", {}]);
                                 self.write.send(Message::Text(format!("42{}", stop_payload.to_string()).into())).await?;
+                                
                                 tokio::time::sleep(Duration::from_millis(500)).await;
+
                                 println!("[ACTION] Sending 'start' event...");
                                 let start_payload = json!(["start", {"args": ""}]);
                                 self.write.send(Message::Text(format!("42{}", start_payload.to_string()).into())).await?;
@@ -239,7 +242,14 @@ impl EvertextClient {
                              }
                          }
 
-                         // --- 2. Main Game Flow ---
+                         // --- 4. More Events Prompt ---
+                         // "Press y to do more events:"
+                         if output_text.contains("Press y to do more events") {
+                             println!("[ACTION] Prompt: 'Do more events?'. Sending 'y' (waiting for 'next' prompt to exit)...");
+                             self.send_command("y").await?;
+                         }
+
+                         // --- 5. End of Loop ---
                          
                          // "Press y to spend mana on event stages :"
                          if output_text.contains("Press y to spend mana on event stages") {
@@ -303,7 +313,6 @@ impl EvertextClient {
                              // Since 'auto_sent' is already true, the 'next' block above will handle sending 'exit'.
                          }
 
-                         // --- 5. End of Loop ---
                          // "Press y to perform more commands:"
                          if output_text.contains("Press y to perform more commands") {
                              // Only exit if we've actually done work OR it's clearly finished/already done
@@ -311,11 +320,8 @@ impl EvertextClient {
                                  println!("[INFO] Prompt: 'Perform more commands'. Run Complete.");
                                  return Err("SESSION_COMPLETE".into()); // Trigger clean exit
                              } else {
-                                 println!("[WARN] Seen exit prompt but no work confirmed (*auto_sent: {}, *handout_sent: {}). Retrying command...", *auto_sent, *handout_sent);
-                                 match mode {
-                                     RunMode::Daily => self.send_command("d").await?,
-                                     RunMode::Handout => self.send_command("ho").await?,
-                                 }
+                                 println!("[WARN] Seen exit prompt but no work confirmed (*auto_sent: {}, *handout_sent: {}). Sending 'y' to return to menu...", *auto_sent, *handout_sent);
+                                 self.send_command("y").await?;
                              }
                          }
 
@@ -352,8 +358,8 @@ impl EvertextClient {
             } else if event_name == "disconnect" {
                 println!("[ERROR] Server sent 'disconnect' event.");
                 return Err("SERVER_DISCONNECT".into());
-            } else if event_name == "activity_ping" {
-                // Silenced heartbeat/ping events to clean up logs
+            } else if event_name == "activity_ping" || event_name == "user_count_update" {
+                // Silenced heartbeat/ping/count events to clean up logs
                 return Ok(());
             } else {
                 println!("[DEBUG] Unhandled Socket.io event: {} -> {:?}", event_name, event_data);
