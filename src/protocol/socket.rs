@@ -86,12 +86,17 @@ impl EvertextClient {
     }
 
     pub async fn run_loop(&mut self, account: &Account, decrypted_code: &str, mode: RunMode) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        if decrypted_code.is_empty() {
+             println!("[ERROR] Code is empty/missing for {}", account.name);
+             return Err("MISSING_CODE".into());
+        }
         let mut last_ping = Instant::now();
         let mut state = GameState::Connected;
         
         // Trackers
         let mut auto_sent = false;
         let mut handout_sent = false;
+        let mut start_sent_at: Option<Instant> = None;
 
         println!("[INFO][PID:{}] Starting session for account: {} (Mode: {:?})", std::process::id(), account.name, mode);
 
@@ -107,11 +112,20 @@ impl EvertextClient {
                          return Err("CONNECTION_TIMEOUT".into());
                      }
 
-                     // 2. Game Activity Timeout (Stuck on 'start' or unresponsive script)
-                     // If we haven't received any 'output' from the game in 180 seconds, assume stuck.
+                     // 2. Game Activity Timeout
                      if last_activity.elapsed().as_secs() > 180 {
                          println!("[ERROR] Game Activity timed out (stuck for 180s). Disconnecting...");
                          return Err("ACTIVITY_TIMEOUT".into());
+                     }
+
+                     // 3. Start Event Retry (Kick if stuck on black screen)
+                     if let Some(sent_time) = start_sent_at {
+                         if last_activity.elapsed().as_secs() > 20 && sent_time.elapsed().as_secs() > 20 {
+                             println!("[WARN] No activity for 20s after 'start'. Retrying initialization...");
+                             let start_payload = json!(["start", {"args": ""}]);
+                             let _ = self.write.send(Message::Text(format!("42{}", start_payload.to_string()).into())).await;
+                             start_sent_at = None; // Only retry once
+                         }
                      }
                 }
                 msg = self.read.next() => {
@@ -129,20 +143,18 @@ impl EvertextClient {
                                 let stop_payload = json!(["stop", {}]);
                                 self.write.send(Message::Text(format!("42{}", stop_payload.to_string()).into())).await?;
                                 
-                                tokio::time::sleep(Duration::from_millis(1000)).await;
+                                tokio::time::sleep(Duration::from_millis(1500)).await;
 
                                 println!("[ACTION] Sending 'start' event...");
-                                let start_payload = json!(["start", {"args": ""}]);
+                                let start_payload = json!(["start", {}]);
                                 self.write.send(Message::Text(format!("42{}", start_payload.to_string()).into())).await?;
                                 last_activity = Instant::now(); 
+                                start_sent_at = Some(Instant::now());
                             } else if text.starts_with("42") {
-                                // println!("[DEBUG] Received 42: {}", text);
                                 if text.contains("output") {
                                     last_activity = Instant::now();
                                 }
                                 self.handle_event(&text, &mut state, account, decrypted_code, &mut auto_sent, &mut handout_sent, mode).await?;
-                            } else {
-                                // println!("[DEBUG] Received Other: {}", text);
                             }
                         }
                         Some(Err(e)) => return Err(e.into()),
@@ -162,7 +174,6 @@ impl EvertextClient {
 
     async fn handle_event(&mut self, text: &str, state: &mut GameState, account: &Account, code: &str, auto_sent: &mut bool, handout_sent: &mut bool, mode: RunMode) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         let json_part = &text[2..];
-        // Parse the event. If it fails, just ignore it (sometimes random packets come in)
         let event: serde_json::Value = match serde_json::from_str(json_part) {
             Ok(v) => v,
             Err(_) => return Ok(()),
@@ -181,176 +192,139 @@ impl EvertextClient {
                              println!("[TERMINAL] {}", clean_log.chars().take(150).collect::<String>());
                          }
                          
-                        // Update history for multi-line parsing
+                        // Update history for multi-line/chunked parsing
                         self.history.push_str(output_text);
                         if self.history.len() > 10000 {
                             let mut drain_len = self.history.len() - 10000;
-                            while !self.history.is_char_boundary(drain_len) && drain_len > 0 {
-                                drain_len -= 1;
-                            }
+                            while !self.history.is_char_boundary(drain_len) && drain_len > 0 { drain_len -= 1; }
                             self.history.replace_range(..drain_len, "");
                         }
 
-                         // --- 1. Initial / Login Flow ---
-                         if output_text.contains("Enter Command to use") {
+                         // --- ROBOT LOGIC USING HISTORY (Handles chunked/split text) ---
+                         
+                         if self.history.contains("Enter Command to use") {
+                             self.history = self.history.replace("Enter Command to use", "[PROCESSED_PROMPT]");
                              match mode {
                                  RunMode::Daily => {
-                                     println!("[ACTION] Prompt: 'Enter Command'. Sending 'd' (Daily)...");
-                                     *state = GameState::SentD;
+                                     println!("[ACTION] Prompt: 'Enter Command'. Sending 'd'...");
                                      self.send_command("d").await?;
                                  },
                                  RunMode::Handout => {
-                                     println!("[ACTION] Prompt: 'Enter Command'. Sending 'ho' (Handout)...");
-                                     // State SentD is roughly equivalent to SentHo for flow purposes
-                                     *state = GameState::SentD; 
+                                     println!("[ACTION] Prompt: 'Enter Command'. Sending 'ho'...");
                                      self.send_command("ho").await?;
                                  }
                              }
                          }
                          
-                         if output_text.contains("Enter Restore code") {
-                             println!("[ACTION] Prompt: 'Enter Restore code'. Sending Code...");
-                             *state = GameState::SentCode;
+                         if self.history.contains("Enter Restore code") {
+                             self.history = self.history.replace("Enter Restore code", "[PROCESSED_CODE]");
+                             println!("[ACTION] Prompt: 'Enter Code'. Sending...");
                              self.send_command(code).await?;
                          }
 
-                         // Server Selection
-                         if output_text.contains("Which acc u want to Login") {
-                             if let Some(target) = &account.target_server {
-                                 println!("[ACTION] Prompt: 'Server Selection'. Parsing for '{}'...", target);
-                                 let mut selected_index = "1".to_string();
+                         if self.history.contains("Which acc u want to Login") {
+                             let target = account.target_server.as_deref().unwrap_or("Default");
+                             if target != "Default" {
+                                 println!("[ACTION] Server Selection parsing for '{}'...", target);
                                  let re = Regex::new(r"(\d+)-->.*?\((.*?)\)").unwrap();
+                                 let mut selected_index = "1".to_string();
                                  let mut found = false;
-                                 
                                  for cap in re.captures_iter(&self.history) {
-                                     let index = &cap[1];
-                                     let server_name = &cap[2];
-                                     if server_name.contains(target) || (target.to_lowercase() == "all" && server_name.contains("All of them")) {
-                                         println!("[INFO] Found target server '{}' at index {}", target, index);
-                                         selected_index = index.to_string();
-                                         found = true;
-                                         break;
+                                     if cap[2].contains(target) || (target.to_lowercase() == "all" && cap[2].contains("All of them")) {
+                                         selected_index = cap[1].to_string();
+                                         found = true; break;
                                      }
                                  }
-                                 if !found { println!("[WARN] Target '{}' not found. Defaulting to '1'.", target); }
-                                 
-                                 println!("[ACTION] Sending server choice: {}", selected_index);
+                                 if !found { println!("[WARN] Target server '{}' not found in list.", target); }
+                                 println!("[ACTION] Selecting server index: {}", selected_index);
                                  self.send_command(&selected_index).await?;
-                                 *state = GameState::ServerSelected;
-                             } else {
-                                 println!("[INFO] No targetServer specified. Assuming single server.");
+                                 self.history = self.history.replace("Which acc u want to Login", "[PROCESSED_SERVER]");
                              }
                          }
 
-                         // --- 2. Main Game Flow ---
-                         
-                         // "Press y to spend mana on event stages :"
-                         if output_text.contains("Press y to spend mana on event stages") {
+                         if self.history.contains("Press y to spend mana on event stages") {
+                             self.history = self.history.replace("Press y to spend mana on event stages", "[PROCESSED_MANA]");
                              match mode {
                                  RunMode::Daily => {
-                                     println!("[ACTION] Prompt: 'Spend mana'. Sending 'y'...");
+                                     println!("[ACTION] Sending 'y' for mana...");
                                      self.send_command("y").await?;
                                  },
                                  RunMode::Handout => {
                                      if !*handout_sent {
-                                         println!("[ACTION] Prompt: 'Spend mana'. Sending 'ho' (Handout)...");
                                          self.send_command("ho").await?;
                                          *handout_sent = true;
                                      } else {
-                                         println!("[ACTION] Prompt: 'Spend mana'. Sending 'y' (Handout Confirmation)...");
                                          self.send_command("y").await?;
                                      }
                                  }
                              }
                          }
 
-                         // "next: Go to the next event. [default option if nothing entered]"
-                         if output_text.contains("next: Go to the next event") {
+                         if self.history.contains("next: Go to the next event") {
+                             self.history = self.history.replace("next: Go to the next event", "[PROCESSED_NEXT]");
                              if !*auto_sent {
-                                 println!("[ACTION] Prompt: 'next event'. Sending 'auto' (First time)...");
+                                 println!("[ACTION] Sending 'auto'...");
                                  self.send_command("auto").await?;
                                  *auto_sent = true;
                              } else {
-                                 println!("[ACTION] Prompt: 'next event'. Sending 'exit' (Already sent auto)...");
+                                 println!("[ACTION] Sending 'exit'...");
                                  self.send_command("exit").await?;
                              }
                          }
 
-                         // --- 3. Mana Refill Logic (Situational) ---
-                         if output_text.contains("DO U WANT TO REFILL MANA") {
-                             println!("[ACTION] Prompt: 'Refill Mana'. Sending 'y'...");
+                         if self.history.contains("DO U WANT TO REFILL MANA") {
+                             self.history = self.history.replace("DO U WANT TO REFILL MANA", "[PROCESSED_REFILL]");
+                             println!("[ACTION] Sending 'y' for refill...");
                              self.send_command("y").await?;
                          }
-
-                         // "Enter 1, 2 or 3 to select potion to refill:"
-                         if output_text.contains("Enter 1, 2 or 3 to select potion to refill") {
-                             println!("[ACTION] Prompt: 'Select potion'. Sending '3'...");
+                         if self.history.contains("Enter 1, 2 or 3 to select potion") {
+                             self.history = self.history.replace("Enter 1, 2 or 3 to select potion", "[PROCESSED_POTION]");
                              self.send_command("3").await?;
                          }
-
-                         // "Enter the number of stam100 potions to refill"
-                         if output_text.contains("number of stam100 potions to refill") {
-                             println!("[ACTION] Prompt: 'Potion quantity'. Sending '1'...");
+                         if self.history.contains("number of stam100 potions to refill") {
+                             self.history = self.history.replace("number of stam100 potions to refill", "[PROCESSED_QTY]");
                              self.send_command("1").await?;
                          }
 
-                         // --- 4. More Events Prompt ---
-                         if output_text.contains("Press y to do more events") {
-                             println!("[ACTION] Prompt: 'Do more events?'. Sending 'y'...");
-                             self.send_command("y").await?;
-                         }
+                         if self.history.contains("Press y to perform more commands") {
+                             let low = self.history.to_lowercase();
+                             let is_actually_done = low.contains("success") || low.contains("finish") || 
+                                                     low.contains("done") || low.contains("already") || 
+                                                     *auto_sent || *handout_sent;
 
-                         // "Press y to perform more commands:"
-                         if output_text.contains("Press y to perform more commands") {
-                             // CRITICAL: Check history for previous Success/Finish indicators even if not in this pack
-                             let h_lower = self.history.to_lowercase();
-                             let is_finished = h_lower.contains("success") || 
-                                               h_lower.contains("finish") || 
-                                               h_lower.contains("done") || 
-                                               h_lower.contains("already performed") ||
-                                               h_lower.contains("already done");
-
-                             if *auto_sent || *handout_sent || is_finished {
-                                 println!("[INFO] Success Trigger Hit (auto_sent: {}, finish_seen: {}). Run Complete.", *auto_sent, is_finished);
-                                 return Err("SESSION_COMPLETE".into()); // Trigger clean exit
+                             if is_actually_done {
+                                 println!("[INFO] Session complete trigger found in history.");
+                                 return Err("SESSION_COMPLETE".into());
                              } else {
-                                 println!("[WARN] Seen exit prompt but no work confirmed. Sending 'y' to return to menu...");
+                                 println!("[WARN] Exit prompt seen but work not confirmed. Returning to menu...");
+                                 self.history = self.history.replace("Press y to perform more commands", "[PROCESSED_Y]");
                                  self.send_command("y").await?;
                              }
                          }
 
-                         // --- 6. Error Handling ---
-                         if output_text.contains("Invalid Command") && output_text.contains("Exiting Now") {
-                             println!("[ERROR] Invalid Command Detected. Triggering Restart...");
-                               return Err("INVALID_COMMAND_RESTART".into());
-                         }
-                         if output_text.contains("Either Zigza error or Incorrect Restore Code Entered") {
-                             println!("[ERROR] Zigza Error Detected!");
+                         // --- ERROR SCANNING (History-based) ---
+                         if self.history.contains("Zigza error") || self.history.contains("Incorrect Restore Code") {
+                             println!("[ERROR] Zigza/Code Error Detected!");
                              return Err("ZIGZA_DETECTED".into());
                          }
-                         if output_text.contains("Server reached maximum limit of restore accounts") {
-                             println!("[ERROR] Server Full Detected!");
+                         if self.history.contains("maximum limit of restore accounts") {
+                             println!("[ERROR] Server Full!");
                              return Err("SERVER_FULL".into());
                          }
-                         if output_text.contains("Access to start bot is restricted only for logged in users") {
-                             println!("[ERROR] Login Required / Cookie Expired!");
+                         if self.history.contains("restricted only for logged in users") {
+                             println!("[ERROR] Cookie Expired!");
                              return Err("LOGIN_REQUIRED".into());
+                         }
+                         if self.history.contains("Invalid Command") && self.history.contains("Exiting Now") {
+                             println!("[ERROR] Invalid Command Loop!");
+                             return Err("INVALID_COMMAND_RESTART".into());
                          }
                      }
                  }
-            } else if event_name == "idle_timeout" {
-                println!("[ERROR] Server sent 'idle_timeout'. Disconnecting...");
-                return Err("IDLE_TIMEOUT".into());
-            } else if event_name == "connection_failed" {
-                println!("[ERROR] Server sent 'connection_failed'. Disconnecting...");
-                return Err("CONNECTION_FAILED".into());
-            } else if event_name == "disconnect" {
-                println!("[ERROR] Server sent 'disconnect' event.");
-                return Err("SERVER_DISCONNECT".into());
+            } else if event_name == "idle_timeout" || event_name == "disconnect" {
+                return Err(format!("SERVER_{}", event_name.to_uppercase()).into());
             } else if event_name == "activity_ping" || event_name == "user_count_update" {
                 return Ok(());
-            } else {
-                println!("[DEBUG] Unhandled Socket.io event: {} -> {:?}", event_name, event_data);
             }
         }
         Ok(())
