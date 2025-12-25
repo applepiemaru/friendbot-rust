@@ -125,22 +125,24 @@ impl EvertextClient {
                             } else if text.starts_with("40") {
                                 println!("[INFO] Namespace joined. Initializing session...");
                                 
-                                // Restore 'stop' command to reset terminal state (matching original repo)
+                                println!("[ACTION] Sending 'stop' event...");
                                 let stop_payload = json!(["stop", {}]);
                                 self.write.send(Message::Text(format!("42{}", stop_payload.to_string()).into())).await?;
                                 
-                                tokio::time::sleep(Duration::from_millis(500)).await;
+                                tokio::time::sleep(Duration::from_millis(1000)).await;
 
                                 println!("[ACTION] Sending 'start' event...");
                                 let start_payload = json!(["start", {"args": ""}]);
                                 self.write.send(Message::Text(format!("42{}", start_payload.to_string()).into())).await?;
-                                last_activity = Instant::now(); // Reset activity on start
+                                last_activity = Instant::now(); 
                             } else if text.starts_with("42") {
-                                // If we get actual game data, update activity
+                                // println!("[DEBUG] Received 42: {}", text);
                                 if text.contains("output") {
                                     last_activity = Instant::now();
                                 }
                                 self.handle_event(&text, &mut state, account, decrypted_code, &mut auto_sent, &mut handout_sent, mode).await?;
+                            } else {
+                                // println!("[DEBUG] Received Other: {}", text);
                             }
                         }
                         Some(Err(e)) => return Err(e.into()),
@@ -173,10 +175,9 @@ impl EvertextClient {
             if event_name == "output" {
                  if let Some(data) = event_data {
                      if let Some(output_text) = data["data"].as_str() {
-                         // Print terminal output (clean up newlines for log readability)
+                         // Print terminal output
                          let clean_log = output_text.replace("\n", " ");
-                         // Log only significant chunks to avoid spam
-                         if clean_log.len() > 5 {
+                         if !clean_log.trim().is_empty() {
                              println!("[TERMINAL] {}", clean_log.chars().take(150).collect::<String>());
                          }
                          
